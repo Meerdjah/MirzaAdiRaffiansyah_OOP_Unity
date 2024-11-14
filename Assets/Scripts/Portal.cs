@@ -1,64 +1,46 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Portal : MonoBehaviour
 {
-    [SerializeField] float speed;
-    [SerializeField] float rotateSpeed;
-    private LevelManager levelManager;
+    [SerializeField] float speed = 0.15f;
+    //[SerializeField] float rotateSpeed = 5.0f;
+
     Vector2 newPosition;
-    GameObject player;
-    SpriteRenderer spriteRenderer;
-    Collider2D portalCollider;
 
     void Start()
     {
-        levelManager = FindObjectOfType<LevelManager>();
-
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        portalCollider = GetComponent<Collider2D>();
-        player = GameObject.FindWithTag("Player");
-        spriteRenderer.enabled = false;
-        portalCollider.enabled = false;
-        
         ChangePosition();
     }
 
     void Update()
     {
-        float distanceToNewPosition = Vector3.Distance(transform.position, newPosition);
-        if (distanceToNewPosition < 0.5f)
-        {
+        if (Vector2.Distance(transform.position, newPosition) < 0.5f)
             ChangePosition();
-        }
 
-        transform.position = Vector3.Lerp(transform.position, newPosition, speed * Time.deltaTime);
-        transform.Rotate(Vector3.forward, rotateSpeed * Time.deltaTime);
 
-        if (player.GetComponentInChildren<Weapon>() == null)
+        if (GameObject.FindGameObjectWithTag("Player").GetComponentInChildren<Weapon>() != null)
         {
-            return;
+            GetComponent<SpriteRenderer>().enabled = true;
+            GetComponent<Collider2D>().enabled = true;
+            transform.position = Vector2.Lerp(transform.position, newPosition, speed * Time.deltaTime);
         }
-
-        spriteRenderer.enabled = true;
-        portalCollider.enabled = true;
+        else
+        {
+            GetComponent<SpriteRenderer>().enabled = false;
+            GetComponent<Collider2D>().enabled = false;
+        }
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
-            levelManager.LoadScene("Main");
+            GameManager.Instance.LevelManager.LoadScene("Main");
         }
     }
+
     void ChangePosition()
     {
-        newPosition = new Vector3(
-            Random.Range(-10f, 10f),
-            Random.Range(-5f, 5f),
-            0f
-        );
+        newPosition = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f));
     }
-
 }
