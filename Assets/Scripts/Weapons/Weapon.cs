@@ -4,73 +4,47 @@ using UnityEngine.Pool;
 
 public class Weapon : MonoBehaviour
 {
-    public Transform parentTransform;
-
     [Header("Weapon Stats")]
     [SerializeField] private float shootIntervalInSeconds = 3f;
-    
-    [Header("Bullets")] 
-    public BigBoolet bigBoolet;
-    [SerializeField] private Transform bulletSpawnPoint;
+
+    [Header("Bullets")]
+    public Bullet bullet; // Prefab reference for the Bullet
+    [SerializeField] private Transform bulletSpawnPoint; // Spawn point for the bullet
 
     [Header("Bullet Pool")]
-    private IObjectPool<BigBoolet> objectPool;
+    private IObjectPool<Bullet> objectPool;
 
     private readonly bool collectionCheck = false;
     private readonly int defaultCapacity = 30;
     private readonly int maxSize = 100;
     private float timer;
 
-    void Awake() 
+    public Transform parentTransform;
+
+    void Awake()
     {
-        objectPool = new ObjectPool<BigBoolet>(
-            CreateBullet, OnGetBullet, OnReleaseBullet, OnDestroyBullet,
-            collectionCheck, defaultCapacity, maxSize
+        // Initialize the object pool with custom create, release, and destroy methods
+        objectPool = new ObjectPool<Bullet>(
+            CreateBullet,
+            OnGetBullet,
+            OnReleaseBullet,
+            OnDestroyBullet,
+            collectionCheck,
+            defaultCapacity,
+            maxSize
         );
 
+        // Ensure bulletSpawnPoint is set
         if (bulletSpawnPoint == null)
         {
-            bulletSpawnPoint = transform.Find("BulletSpawnPoint");
-
-            if (bulletSpawnPoint == null)
-            {
-                Debug.LogWarning("BulletSpawnPoint not found");
-            }
-            else
-            {
-                bulletSpawnPoint.position = new Vector3(0,1,0);
-            }
+            Debug.LogWarning("Bullet Spawn Point is not set!");
         }
     }
 
-    BigBoolet CreateBullet()
+    void Update()
     {
-        BigBoolet newBoolet = Instantiate(bigBoolet, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
-        newBoolet.SetObjectPool(objectPool);
-        return newBoolet;
-    }
-
-    void OnGetBullet(BigBoolet bigBoolet)
-    {
-        bigBoolet.gameObject.SetActive(true);
-        bigBoolet.transform.position = bulletSpawnPoint.position;
-        bigBoolet.transform.rotation = bulletSpawnPoint.rotation;
-    }
-
-    void OnReleaseBullet(BigBoolet bigBoolet)
-    {
-        bigBoolet.gameObject.SetActive(false);
-    }
-
-    void OnDestroyBullet(BigBoolet bigBoolet)
-    {
-        Destroy(bigBoolet.gameObject);
-    }
-
-    void Update() 
-    {
+        // Timer to control shooting interval
         timer += Time.deltaTime;
-
         if (timer >= shootIntervalInSeconds)
         {
             Shoot();
@@ -78,13 +52,42 @@ public class Weapon : MonoBehaviour
         }
     }
 
-    public BigBoolet Shoot()
+    // Method to spawn a bullet from the object pool
+    public Bullet Shoot()
     {
         if (objectPool != null)
         {
-            BigBoolet bulletInstance = objectPool.Get();
+            Bullet bulletInstance = objectPool.Get();
             return bulletInstance;
         }
         return null;
+    }
+
+    // Create a new bullet instance when the pool needs more objects
+    private Bullet CreateBullet()
+    {
+        Bullet newBullet = Instantiate(bullet, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
+        newBullet.SetObjectPool(objectPool);
+        return newBullet;
+    }
+
+    // Called when getting a bullet from the pool
+    private void OnGetBullet(Bullet bullet)
+    {
+        bullet.transform.position = bulletSpawnPoint.position;
+        bullet.transform.rotation = bulletSpawnPoint.rotation;
+        bullet.gameObject.SetActive(true);
+    }
+
+    // Called when releasing a bullet back to the pool
+    private void OnReleaseBullet(Bullet bullet)
+    {
+        bullet.gameObject.SetActive(false);
+    }
+
+    // Called when destroying a bullet in the pool
+    private void OnDestroyBullet(Bullet bullet)
+    {
+        Destroy(bullet.gameObject);
     }
 }

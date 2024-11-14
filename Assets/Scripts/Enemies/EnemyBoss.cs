@@ -1,18 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.Pool;
 
 public class EnemyBoss : EnemyHorizontal
 {
-    public BigBoolet bigBoolet;
-    public Transform bulletSpawnPoint;  // Where bullets will spawn from.
-    public float shootInterval = 2f;    // How often the boss shoots.
+    public Bullet bullet;
+    public Transform bulletSpawnPoint;
+    public float shootInterval = 2f;
 
     private float shootTimer;
 
     [Header("Bullet Pool")]
-    private IObjectPool<BigBoolet> objectPool;
+    private IObjectPool<Bullet> objectPool;
 
     private readonly bool collectionCheck = false;
     private readonly int defaultCapacity = 30;
@@ -21,8 +20,8 @@ public class EnemyBoss : EnemyHorizontal
     public override void Awake()
     {
         base.Awake();
-        // Initialize the bullet object pool
-        objectPool = new ObjectPool<BigBoolet>(
+        // Menginisialisasi ObjectPool
+        objectPool = new ObjectPool<Bullet>(
             CreateBullet,
             OnGetBullet,
             OnReleaseBullet,
@@ -32,33 +31,33 @@ public class EnemyBoss : EnemyHorizontal
             maxSize
         );
 
-        // Find BulletSpawnPoint if not assigned in the Inspector
+        // Mencari BulletSpawnPoint
         if (bulletSpawnPoint == null)
         {
             bulletSpawnPoint = transform.Find("BulletSpawnPoint");
 
             if (bulletSpawnPoint == null)
             {
-                Debug.LogWarning("BulletSpawnPoint not found as a child of Weapon.");
+                Debug.LogWarning(this + " tidak menemukan BulletSpawnPoint");
             }
             else
             {
-                bulletSpawnPoint.position = new Vector3(0, 1, 0); // Initial offset
+                bulletSpawnPoint.position = new Vector3(0, 1, 0); // Memberikan offset pada BulletSpawnPoint
             }
         }
     }
 
     new void Start()
     {
-        base.Start();  // Ensure base Start() is called for movement initialization.
-        shootTimer = 0;
+        base.Start();
+        shootTimer = 0; // Menyiapkan timer untuk menembak
     }
 
     public override void Move()
     {
-        base.Move();  // Use the horizontal movement logic from EnemyHorizontal.
+        base.Move();
 
-        // Handle shooting at intervals.
+        // Menembak Bullet setiap interval waktu
         shootTimer += Time.deltaTime;
         if (shootTimer >= shootInterval)
         {
@@ -67,35 +66,35 @@ public class EnemyBoss : EnemyHorizontal
         }
     }
 
-    private BigBoolet CreateBullet()
+    private Bullet CreateBullet()
     {
-        BigBoolet newBoolet = Instantiate(bigBoolet, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
-        newBoolet.SetObjectPool(objectPool); // Assign pool to bullet
-        return newBoolet;
+        Bullet newBullet = Instantiate(bullet, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
+        newBullet.SetObjectPool(objectPool);
+        return newBullet;
     }
 
-    private void OnGetBullet(BigBoolet bigBoolet)
+    private void OnGetBullet(Bullet bullet)
     {
-        bigBoolet.gameObject.SetActive(true); // Activate bullet
-        bigBoolet.transform.position = bulletSpawnPoint.position;
-        bigBoolet.transform.rotation = bulletSpawnPoint.rotation;
+        bullet.gameObject.SetActive(true);
+        bullet.transform.position = bulletSpawnPoint.position;
+        bullet.transform.rotation = bulletSpawnPoint.rotation;
     }
 
-    private void OnReleaseBullet(BigBoolet bigBoolet)
+    private void OnReleaseBullet(Bullet bullet)
     {
-        bigBoolet.gameObject.SetActive(false); // Deactivate bullet
+        bullet.gameObject.SetActive(false);
     }
 
-    private void OnDestroyBullet(BigBoolet bigBoolet)
+    private void OnDestroyBullet(Bullet bullet)
     {
-        Destroy(bigBoolet.gameObject); // Destroy bullet when pool limit is reached
+        Destroy(bullet.gameObject);
     }
     
-    public BigBoolet Shoot()
+    public Bullet Shoot()
     {
         if (objectPool != null && bulletSpawnPoint != null)
         {
-            BigBoolet bulletInstance = objectPool.Get();
+            Bullet bulletInstance = objectPool.Get();
             return bulletInstance;
         }
         return null;

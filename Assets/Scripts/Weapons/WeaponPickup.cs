@@ -65,12 +65,6 @@ public class WeaponPickup : MonoBehaviour
             Player player = other.GetComponent<Player>();
             if (player != null){
                 player.SwitchWeapon(weapon, this);  // Pass the new weapon and this WeaponPickup instance
-
-                BigBoolet bulletInstance = weapon.Shoot();
-                if (bulletInstance != null)
-                {
-                    bulletInstance.ActivateBullet();  // Call ActivateBullet to start moving the bullet
-                }
             }
         }
         else{

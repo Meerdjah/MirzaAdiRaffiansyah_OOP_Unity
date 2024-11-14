@@ -4,7 +4,7 @@ using UnityEngine;
 public class HitboxComponent : MonoBehaviour
 {
     public HealthComponent health;
-    InvisibilityComponent invisibilityComponent;
+    public InvisibilityComponent invisibilityComponent;
 
     void Start()
     {

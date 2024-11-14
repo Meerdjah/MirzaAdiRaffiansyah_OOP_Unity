@@ -1,5 +1,4 @@
 using System.Collections;
-
 using UnityEngine;
 
 public class InvisibilityComponent : MonoBehaviour
@@ -7,44 +6,59 @@ public class InvisibilityComponent : MonoBehaviour
     [SerializeField] private int blinkingCount = 7;
     [SerializeField] private float blinkInterval = 0.1f;
     [SerializeField] private Material blinkMaterial;
+
     private SpriteRenderer spriteRenderer;
     private Material originalMaterial;
     public bool isInvincible = false;
     private int count;
 
-    void Start()
+    void Awake()
     {
-        // Get the SpriteRenderer to be used,
-        // alternatively you could set it from the inspector.
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        // Get the material that the SpriteRenderer uses, 
-        // so we can switch back to it after the flash ended.
-        originalMaterial = spriteRenderer.material;
+        if (spriteRenderer == null)
+        {
+            Debug.LogWarning("SpriteRenderer is missing on this GameObject. Invisibility effects will not work.");
+        }
+    }
+
+    void Start()
+    {
+        if (spriteRenderer != null)
+        {
+            originalMaterial = spriteRenderer.material;
+        }
     }
 
     public void Flash()
     {
-        StartCoroutine(FlashRoutine());
+        // Start blinking if not already invincible
+        if (!isInvincible && spriteRenderer != null)
+        {
+            StartCoroutine(FlashRoutine());
+        }
     }
 
     private IEnumerator FlashRoutine()
     {
+        if (spriteRenderer == null || blinkMaterial == null)
+        {
+            yield break; // Exit if SpriteRenderer or blinkMaterial is missing
+        }
+
         count = 0;
-        isInvincible = true;
-        // Swap to the flashMaterial.
+        isInvincible = true; // Start invincibility phase
+
         while (count < blinkingCount)
         {
-            spriteRenderer.material = blinkMaterial;
+            spriteRenderer.material = blinkMaterial; // Change to blink material
 
-            // Pause the execution of this function for "duration" seconds.
-            yield return new WaitForSeconds(blinkInterval);
+            yield return new WaitForSeconds(blinkInterval); // Blink delay
 
-            // After the pause, swap back to the original material.
-            spriteRenderer.material = originalMaterial;  
-            count++; 
+            spriteRenderer.material = originalMaterial; // Revert to original material
+            count++;
         }
-        isInvincible = false;
-    }
 
+        isInvincible = false; // End invincibility phase
+    }
 }

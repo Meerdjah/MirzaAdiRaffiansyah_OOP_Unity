@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -11,21 +9,24 @@ public class Enemy : MonoBehaviour
 
     public Camera mainCamera;
 
+    // Akan dioverride oleh child class
     public virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0;
 
+        // Memberikan MainCamera ke Enemy
         if (mainCamera == null)
         {
             mainCamera = Camera.main;
             if (mainCamera == null)
             {
-                Debug.LogError("No main camera found. Assign a camera in the Inspector.");
+                Debug.LogError("Tidak ada camera pada " + this);
             }
         }
     }
 
+    // Memberikan sprite untuk Enemy
     public void SetSprite(Sprite sprite)
     {
         GetComponent<SpriteRenderer>().sprite = sprite;
@@ -33,6 +34,7 @@ public class Enemy : MonoBehaviour
 
     public virtual void Move()
     {
+        // Akan dioverride oleh child class
     }
 
     void Update()

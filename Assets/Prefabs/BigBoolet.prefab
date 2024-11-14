@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4345454972812800277}
   - component: {fileID: 5406969516143430188}
   - component: {fileID: 7266922287626952774}
+  - component: {fileID: 5229926065798260279}
   m_Layer: 0
   m_Name: BigBoolet
   m_TagString: Untagged
@@ -193,3 +194,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 222d81bb7907c004ebc2f16cc19d5fb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bulletSpeed: 20
+  damage: 9
+--- !u!114 &5229926065798260279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3015311669446823136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61d243d56496f994b8a30ed99fa27825, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 10
