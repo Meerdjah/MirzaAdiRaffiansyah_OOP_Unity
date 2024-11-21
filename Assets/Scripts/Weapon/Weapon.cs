@@ -1,13 +1,17 @@
 using UnityEngine;
 using UnityEngine.Pool;
 
-public class EnemyBoss : EnemyHorizontal
+public class Weapon : MonoBehaviour
 {
-    public Bullet bullet;
-    public Transform bulletSpawnPoint;
-    public float shootInterval = 2f;
+    public Transform parentTransform;
+    public WeaponPickup weaponPickup;
 
-    private float shootTimer;
+    [Header("Weapon Stats")]
+    [SerializeField] private float shootIntervalInSeconds = 3f;
+
+    [Header("Bullets")]
+    public Bullet bullet;
+    [SerializeField] private Transform bulletSpawnPoint;
 
     [Header("Bullet Pool")]
     private IObjectPool<Bullet> objectPool;
@@ -15,11 +19,11 @@ public class EnemyBoss : EnemyHorizontal
     private readonly bool collectionCheck = false;
     private readonly int defaultCapacity = 30;
     private readonly int maxSize = 100;
+    private float timer;
 
-    public override void Awake()
+    void Awake()
     {
-        base.Awake();
-        // Menginisialisasi ObjectPool
+        // Membuat object pool
         objectPool = new ObjectPool<Bullet>(
             CreateBullet,
             OnGetBullet,
@@ -30,7 +34,7 @@ public class EnemyBoss : EnemyHorizontal
             maxSize
         );
 
-        // Mencari BulletSpawnPoint
+        // Memeriksa apakah BulletSpawnPoint telah ditambahkan
         if (bulletSpawnPoint == null)
         {
             bulletSpawnPoint = transform.Find("BulletSpawnPoint");
@@ -41,30 +45,13 @@ public class EnemyBoss : EnemyHorizontal
             }
             else
             {
-                bulletSpawnPoint.position = new Vector3(0, 1, 0); // Memberikan offset pada BulletSpawnPoint
+                // Memposisikan BulletSpawnPoint didepan Player agar bullet tidak mengenai Player
+                bulletSpawnPoint.position = new Vector3(0,1,0);
             }
         }
     }
 
-    new void Start()
-    {
-        base.Start();
-        shootTimer = 0; // Menyiapkan timer untuk menembak
-    }
-
-    public override void Move()
-    {
-        base.Move();
-
-        // Menembak Bullet setiap interval waktu
-        shootTimer += Time.deltaTime;
-        if (shootTimer >= shootInterval)
-        {
-            Shoot();
-            shootTimer = 0;
-        }
-    }
-
+    // Menambahkan Bullet ke ObjectPool
     private Bullet CreateBullet()
     {
         Bullet newBullet = Instantiate(bullet, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
@@ -72,28 +59,43 @@ public class EnemyBoss : EnemyHorizontal
         return newBullet;
     }
 
+    // Mengaktifkan Bullet di dalam pool yang akan digunakan
     private void OnGetBullet(Bullet bullet)
     {
         bullet.gameObject.SetActive(true);
-        bullet.transform.position = bulletSpawnPoint.position;
-        bullet.transform.rotation = bulletSpawnPoint.rotation;
+        bullet.transform.position = bulletSpawnPoint.position; // Mereset posisi bullet
+        bullet.transform.rotation = bulletSpawnPoint.rotation; // Mereset rotasi bullet
     }
 
+    // Menonaktifkan Bullet yang sudah tidak digunakan
     private void OnReleaseBullet(Bullet bullet)
     {
         bullet.gameObject.SetActive(false);
     }
 
+    // Menghancurkan Bullet jika ObjectPool sudah penuh
     private void OnDestroyBullet(Bullet bullet)
     {
         Destroy(bullet.gameObject);
     }
-    
+
+    void Update()
+    {
+        timer += Time.deltaTime;
+
+        // Menembakkan Bullet dalam interval waktu
+        if (timer >= shootIntervalInSeconds)
+        {
+            Shoot();
+            timer = 0;
+        }
+    }
+
     public Bullet Shoot()
     {
-        if (objectPool != null && bulletSpawnPoint != null)
+        if (objectPool != null)
         {
-            Bullet bulletInstance = objectPool.Get();
+            Bullet bulletInstance = objectPool.Get(); // Mengambil Bullet dari ObjectPool
             return bulletInstance;
         }
         return null;

@@ -1,60 +1,61 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    // This for getting the instace of Player Singleton
-    public static Player Instance { get; private set; }
-
-    // Getting the PlayerMovement methods
+    public static Player instance;
     PlayerMovement playerMovement;
-    // Animator
     Animator animator;
 
-
-    // Key for Singleton
+    //Method Awake() digunakan untuk membuat singleton dari Player pada saat GameObject pertama kali diinstansiasi
     void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (instance == null)
         {
-            Destroy(this);
-            return;
+            instance = this;
+            DontDestroyOnLoad(gameObject);
         }
-
-        Instance = this;
-
-        DontDestroyOnLoad(gameObject);
+        else
+        {
+            Destroy(gameObject);
+        }
     }
-
-    // Getting Component
+    
+    //Method Start() digunakan untuk memuat component dan script lain di Player ke dalam variabel
     void Start()
     {
-        // Get PlayerMovement components
+        //Mengambil informasi dari script PlayerMovemet.cs
         playerMovement = GetComponent<PlayerMovement>();
 
-        // Get Animator components
-        animator = GameObject.Find("EngineEffect").GetComponent<Animator>();
+        //Mencari GameObject EngineEffect dan mengambil informasi component animator dari EngineEffect
+        GameObject engineEffect = GameObject.Find("EngineEffect");
+        if (engineEffect != null)
+        {
+            animator = engineEffect.GetComponent<Animator>();
+        }
+        else
+        {
+            Debug.LogWarning(this + "tidak ada EngineEffect");
+        }
     }
 
-    // Using FixedUpdate to Move because of physics
+    // Menjalankan method Move dari playerMovement dengan frekuensi tertentu untuk menggerakkan karakter
     void FixedUpdate()
     {
-        playerMovement.Move();
+        if (playerMovement != null)
+        {
+            playerMovement.Move();
+        }
     }
 
+    // Menjalankan method setBool dari animator setelah method FixedUpdate() untuk menjalankan animasi
     void LateUpdate()
     {
-        playerMovement.MoveBound();
-        animator.SetBool("IsMoving", playerMovement.IsMoving());
-    }
-
-    private WeaponPickup currentWeaponPickup;
-
-    public void SwitchWeapon(Weapon newWeapon, WeaponPickup newWeaponPickup)
-    {
-        if (currentWeaponPickup != null)
+        if (animator != null && playerMovement != null)
         {
-            currentWeaponPickup.PickupHandler(true);  // Make the previous weapon pickup visible again
+            playerMovement.MoveBound();
+            animator.SetBool("IsMoving", playerMovement.IsMoving());
         }
-        currentWeaponPickup = newWeaponPickup;
     }
 }

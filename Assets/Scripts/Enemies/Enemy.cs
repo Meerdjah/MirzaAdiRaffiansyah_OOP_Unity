@@ -8,6 +8,7 @@ public class Enemy : MonoBehaviour
     public float moveSpeed = 2f;
 
     public Camera mainCamera;
+    public EnemySpawner spawner;
 
     // Akan dioverride oleh child class
     public virtual void Awake()
@@ -40,5 +41,10 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         Move();
+    }
+
+    void OnDestroy()
+    {
+        spawner.OnEnemyKilled();
     }
 }
